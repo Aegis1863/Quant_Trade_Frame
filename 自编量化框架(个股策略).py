@@ -6,8 +6,8 @@ import time
 
 class AstockTrading(): # 策略类
     def __init__(self, stratege_name, Start_date, End_date, origin_total_value):
-        self._token = '' # 改成自己的token
-        self._pro = ts.pro_api(self._token)
+        token = '' # 改成自己的token
+        self._pro = ts.pro_api(token)
         day = self._pro.trade_cal(exchange='', start_date=Start_date, 
                                   end_date=End_date)
         self._current_buy = [] # 当天买入
@@ -29,8 +29,10 @@ class AstockTrading(): # 策略类
         self._history_value = [] # 历史市值
         self._hold_stock = {} # 目前持仓股票
         self._connot_sell_stock = [] # 跌停股，不能卖
-        self._stata = pd.DataFrame([]) # 最后用于统计
-        self._code = '000001.SZ' # 交易标的
+        self._base_rate = [] # 基准收益率
+        self._my_rate = [] # 个人收益率
+        self._new_calendar = pd.DataFrame([]) # 交易日历（作图用）
+        self._result = pd.DataFrame([]) # 最后用于统计
     
     def get_tick(self): # 获取行情
         self._daily_tick = ts.pro_bar(ts_code=self._code, adj='qfq', 
@@ -122,17 +124,15 @@ class AstockTrading(): # 策略类
         self._hands_list = [] # 当天买入手数
         self._history_value.append(self._total_value) # 记录历史市值
 
-    def picture_all(self, base_rate, my_rate, new_calendar): # 交易结束,作图和结算
-        print('最终市值{}元，收益率{:.3f}%'.format(self._total_value, 
+    def picture_all(self): # 交易结束,作图和结算
+        print('>> 最终市值{:.3f}元，收益率{:.3f}%\n'.format(self._total_value, 
                                       (self._total_value - \
                                        self._origin_total_value)/\
                                           self._origin_total_value*100))
-        self._stata['历史市值'] = my_rate
-        self._stata['沪深300'] = base_rate
-        base_rate = pd.DataFrame(base_rate)
-        my_rate = pd.DataFrame(my_rate)
-        self._stata['超额收益'] = my_rate - base_rate
-        plt.plot(new_calendar, self._stata)
+        self._result['历史市值'] = self._my_rate
+        self._result['沪深300'] = self._base_rate
+        self._result['超额收益'] = self._result['历史市值'] - self._result['沪深300']
+        plt.plot(self._new_calendar, self._result)
         plt.legend(['历史市值', '沪深300', '超额收益'])
         plt.xlabel('日期',fontsize='15')
         plt.ylabel('收益率',fontsize='15')
@@ -140,25 +140,21 @@ class AstockTrading(): # 策略类
         plt.grid()
         plt.show()
 
-    def stata(self): # 统计结果
+    def statistics(self): # 统计结果
         # 把历史市值改成pd.Series形式
         plt.rcParams['font.sans-serif'] = ['Microsoft YaHei']
-        new_calendar = pd.DataFrame([])
-        new_calendar['trade_date'] = [datetime.strptime(day, '%Y%m%d').date()\
+        self._new_calendar['trade_date'] = [datetime.strptime(day, '%Y%m%d').date()\
                                         for day in self._calendar]
         hs300 = self._pro.index_daily(ts_code=self._datum_target, 
                                 start_date=self.start_date, 
                                 end_date=self.end_date)
-        base_rate = [] # 基准收益率
         hs300_close = list(hs300['close'][::-1]) # 沪深300收盘价
         for i in range(len(hs300_close)):
-            base_rate.append((hs300_close[i] - hs300_close[0])/hs300_close[0])
+            self._base_rate.append((hs300_close[i] - hs300_close[0])/hs300_close[0])
         # ↑ 沪深300累计收益率
-        my_rate = [] # 策略收益率
         for i in range(len(self._history_value)):
-            my_rate.append((self._history_value[i] - \
+            self._my_rate.append((self._history_value[i] - \
                             self._origin_total_value)/self._origin_total_value)
-        return base_rate, my_rate, new_calendar
 
     def count_day(self): # 计算交易日期数
         day = self._pro.trade_cal(exchange='', start_date=self.start_date, 
@@ -176,11 +172,11 @@ class AstockTrading(): # 策略类
             if (i+1)%5 == 0:
                 print('>> 已完成{}天交易，还剩下{}天'.format(i+1,days-i-1)) # 通报进度
         print('## 交易完毕\n')
-        base_rate, my_rate, new_calendar = self.stata()
-        self.picture_all(base_rate, my_rate, new_calendar) # 统计作图
+        self.statistics()
+        self.picture_all() # 统计作图
 
-mys = AstockTrading('amount_strategy', '20190101', '20190431', 1000000)
+mys = AstockTrading('amount_strategy', '20190101', '20190531', 1000000)
 # 设定策略名称，交易起止日期，本金
 mys.run() # 运行
 print('利用以下命令查看相关信息：\n>> mys.picture_all() 显示图像')
-print('>> mys._history_order() 显示历史指令')
+print('>> mys._history_order 显示历史指令')

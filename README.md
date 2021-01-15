@@ -24,7 +24,7 @@ AstockTrading()             交易框架（类）
     |- trade()              交易函数
     |- update_hold()        更新持仓函数
     |- picture_all()        作图函数
-    |- stata()              统计函数
+    |- statistics()         统计函数
     |- count_day()          用来计算起止日期中间有多少交易日，以此确定循环次数
     |- run()                运行整个交易
 
