@@ -127,7 +127,7 @@ class AstockTrading(): # 策略类
         self._history_value.append(self._total_value) # 记录历史市值
 
     def picture_all(self, base_rate, my_rate, new_calendar): # 交易结束,作图和结算
-        print('最终市值{}元，收益率{:.3f}%'.format(self._total_value, 
+        print('>> 最终市值{}元，收益率{:.3f}%\n'.format(self._total_value, 
                                       (self._total_value - \
                                        self._origin_total_value)/\
                                           self._origin_total_value*100))
@@ -164,29 +164,27 @@ class AstockTrading(): # 策略类
                             self._origin_total_value)/self._origin_total_value)
         return base_rate, my_rate, new_calendar
 
-def count_day(start_date, end_date): # 计算交易日期数
-    token = '' # 改成自己的token    
-    pro = ts.pro_api(token)
-    day = pro.trade_cal(exchange='', start_date=start_date, 
-                                  end_date=end_date)
-    calendar = day[day['is_open'] == 1].cal_date.apply(str)
-    return len(calendar)
+    def count_day(self): # 计算交易日期数
+        day = self._pro.trade_cal(exchange='', start_date=self.start_date, 
+                                    end_date=self.end_date)
+        calendar = day[day['is_open'] == 1].cal_date.apply(str)
+        return len(calendar)
+    
+    def run(self): # 运行全部交易流程
+        days = self.count_day()
+        for i in range(days): # 循环若干交易日
+            time.sleep(0.05)
+            self.before_market_open()
+            self.strategy()
+            self.trade()
+            if (i+1)%5 == 0:
+                print('>> 已完成{}天交易，还剩下{}天'.format(i+1,days-i-1)) # 通报进度
+        print('## 交易完毕\n')
+        base_rate, my_rate, new_calendar = self.stata()
+        self.picture_all(base_rate, my_rate, new_calendar) # 统计作图
 
-def main(strategy_name, start_date, end_date, origin_value): # 主函数
-    mys = AstockTrading(strategy_name, start_date, end_date, origin_value)
-    days = count_day(start_date, end_date) # 计算日期间隔
-    for i in range(days): # 循环若干交易日
-        time.sleep(0.05)
-        mys.before_market_open()
-        mys.strategy()
-        mys.trade()
-        if i%10 == 0:
-            print('>> 第{}天执行完毕'.format(i+1)) # 通报进度
-    base_rate, my_rate, new_calendar = mys.stata()
-    mys.picture_all(base_rate, my_rate, new_calendar) # 统计作图
-    return mys._history_order # 交易记录
-
-if __name__ == '__main__':
-    logger = main('amount_strategy', '20170101', '20170531', 100000)
-    # 策略名称，交易起止日期，本金，logger是交易记录
-    # 程序中途会弹出可视化交易情况图，需要自己手动保存
+mys = AstockTrading('amount_strategy', '20190101', '20190431', 1000000)
+# 设定策略名称，交易起止日期，本金
+mys.run() # 运行
+print('利用以下命令查看相关信息：\n>> mys.picture_all() 显示图像')
+print('>> mys._history_order() 显示历史指令')
