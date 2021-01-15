@@ -172,8 +172,8 @@ def count_day(start_date, end_date): # 计算交易日期数
     calendar = day[day['is_open'] == 1].cal_date.apply(str)
     return len(calendar)
 
-def main(start_date, end_date, origin_value): # 主函数
-    mys = AstockTrading('amount_strategy', start_date, end_date, origin_value)
+def main(strategy_name, start_date, end_date, origin_value): # 主函数
+    mys = AstockTrading(strategy_name, start_date, end_date, origin_value)
     days = count_day(start_date, end_date) # 计算日期间隔
     for i in range(days): # 循环若干交易日
         time.sleep(0.05)
@@ -187,4 +187,6 @@ def main(start_date, end_date, origin_value): # 主函数
     return mys._history_order # 交易记录
 
 if __name__ == '__main__':
-    logger = main('20170101', '20170531', 100000) # 交易起止日期，本金，logger是交易记录，程序中途会弹出可视化交易情况图，需要自己手动保存
+    logger = main('amount_strategy', '20170101', '20170531', 100000)
+    # 策略名称，交易起止日期，本金，logger是交易记录
+    # 程序中途会弹出可视化交易情况图，需要自己手动保存
