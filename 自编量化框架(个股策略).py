@@ -5,7 +5,7 @@ from datetime import datetime
 import time
 
 class AstockTrading(): # 策略类
-    def __init__(self, stratege_name, Start_date, End_date, orgin_total_value):
+    def __init__(self, stratege_name, Start_date, End_date, origin_total_value):
         self._token = '' # 改成自己的token
         self._pro = ts.pro_api(self._token)
         day = self._pro.trade_cal(exchange='', start_date=Start_date, 
@@ -17,8 +17,8 @@ class AstockTrading(): # 策略类
         self.end_date = End_date
         self._datum_target = '399300.SZ' # 基准标的，沪深300
         self._stratege_name = stratege_name
-        self._orgin_total_value = orgin_total_value # 持仓总市值
-        self._total_value = self._orgin_total_value # 持仓初始市值
+        self._origin_total_value = origin_total_value # 持仓总市值
+        self._total_value = self._origin_total_value # 持仓初始市值
         ########## 主要属性 ↓
         self._daily_tick = pd.DataFrame([]) # 初始化每日行情，在get_tick函数里面赋值
         self._history_order = [] # 历史指令
@@ -125,8 +125,8 @@ class AstockTrading(): # 策略类
     def picture_all(self, base_rate, my_rate, new_calendar): # 交易结束,作图和结算
         print('最终市值{}元，收益率{:.3f}%'.format(self._total_value, 
                                       (self._total_value - \
-                                       self._orgin_total_value)/\
-                                          self._orgin_total_value*100))
+                                       self._origin_total_value)/\
+                                          self._origin_total_value*100))
         self._stata['历史市值'] = my_rate
         self._stata['沪深300'] = base_rate
         base_rate = pd.DataFrame(base_rate)
@@ -157,7 +157,7 @@ class AstockTrading(): # 策略类
         my_rate = [] # 策略收益率
         for i in range(len(self._history_value)):
             my_rate.append((self._history_value[i] - \
-                            self._orgin_total_value)/self._orgin_total_value)
+                            self._origin_total_value)/self._origin_total_value)
         return base_rate, my_rate, new_calendar
 
 def count_day(start_date, end_date): # 计算交易日期数,便于确定循环次数
@@ -168,8 +168,8 @@ def count_day(start_date, end_date): # 计算交易日期数,便于确定循环�
     calendar = day[day['is_open'] == 1].cal_date.apply(str)
     return len(calendar)
 
-def main(start_date, end_date, orgin_value): # 主函数
-    mys = AstockTrading('amount_strategy', start_date, end_date, orgin_value)
+def main(start_date, end_date, origin_value): # 主函数
+    mys = AstockTrading('amount_strategy', start_date, end_date, origin_value)
     days = count_day(start_date, end_date) # 计算日期间隔
     for i in range(days): # 循环若干交易日
         time.sleep(0.05)
