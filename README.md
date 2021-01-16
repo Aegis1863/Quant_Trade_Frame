@@ -14,17 +14,20 @@
 
 # 设计思路
 
-AstockTrading()             交易框架（类）
-    |- __init__()           初始化属性
-    |- get_tick()           获得行情数据
-    |— order_target_value() 将标的交易到指定仓位
-    |- before_market_open() 盘前初始化
-    |- after_market_close() 盘后函数
-    |- strategy()           策略函数
-    |- trade()              交易函数
-    |- update_hold()        更新持仓函数
-    |- picture_all()        作图函数
-    |- statistics()         统计函数
-    |- count_day()          用来计算起止日期中间有多少交易日，以此确定循环次数
-    |- run()                运行整个交易
+```
 
+AstockTrading()         交易框架（类）
+|- __init__()           初始化属性
+|- get_tick()           获得行情数据
+|- order_target_value() 将标的交易到指定仓位
+|- before_market_open() 盘前初始化
+|- after_market_close() 盘后函数
+|- strategy()           策略函数
+|- trade()              交易函数
+|- update_hold()        更新持仓函数
+|- picture_all()        作图函数
+|- statistics()         统计函数
+|- count_day()          用来计算起止日期中间有多少交易日，以此确定循环次数
+|- run()                运行整个交易
+
+```
