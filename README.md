@@ -1,6 +1,6 @@
 基于Tushare数据库，具体调用什么接口，根据实际情况而定。
 
-# whole_Market_strategy：大盘策略
+# Whole_Market_strategy：大盘策略
 
 修改token与strategy部分即可，该大盘策略框架中已经写好了一个策略模板，即买入每日成交量最大的10支股票，写好token之后理论上可直接运行。
 
